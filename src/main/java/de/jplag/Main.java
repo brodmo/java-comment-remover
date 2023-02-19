@@ -6,31 +6,37 @@ import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
+import java.util.List;
+import java.util.stream.Stream;
 
 // could do source code analysis with java parser as well, use NameExpr to extract variable names
 public class Main {
     public static void main(String[] args) {
-        for (String arg: args) {
-            try {
-                Path dir = Paths.get(arg);
-                for (Path path: Files.list(dir).toList()) {
-                    if (!path.toString().toLowerCase().endsWith(".java")) continue;
-                    try {
-                        StaticJavaParser.setConfiguration(new ParserConfiguration().setAttributeComments(false)); // .setSymbolResolver(new JavaSymbolSolver(new ReflectionTypeSolver())));
-                        CompilationUnit cu = StaticJavaParser.parse(Files.readString(path));
-                        Files.writeString(path, cu.toString());
-                    } catch (ParseProblemException e) {
-                        System.err.print(path + " -- ");
-                        error(e);
-                    }
+        assert args.length == 1;
+        Path dir = Paths.get(args[0]);
+        try {
+            for (Path path: getJavaFilePaths(dir.toUri())) {
+                try {
+                    StaticJavaParser.setConfiguration(new ParserConfiguration().setAttributeComments(false)); // .setSymbolResolver(new JavaSymbolSolver(new ReflectionTypeSolver())));
+                    CompilationUnit cu = StaticJavaParser.parse(Files.readString(path));
+                    Files.writeString(path, cu.toString());
+                } catch (ParseProblemException e) {
+                    System.err.print(path + " -- ");
+                    error(e);
                 }
-            } catch (IOException e) {
-                error(e);
             }
+        } catch (IOException e) {
+            error(e);
+        }
+    }
+    
+    private static List<Path> getJavaFilePaths(URI uri) throws IOException {
+        try (Stream<Path> stream = Files.walk(Paths.get(uri))) {
+            return stream.filter(f -> f.toString().toLowerCase().endsWith(".java")).toList();
         }
     }
 
