@@ -20,8 +20,10 @@ public class Main {
         Path dir = Paths.get(args[0]);
         try {
             for (Path path: getJavaFilePaths(dir.toUri())) {
+                ParserConfiguration parserConfig = new ParserConfiguration()
+                        .setAttributeComments(false).setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17);
                 try {
-                    StaticJavaParser.setConfiguration(new ParserConfiguration().setAttributeComments(false)); // .setSymbolResolver(new JavaSymbolSolver(new ReflectionTypeSolver())));
+                    StaticJavaParser.setConfiguration(parserConfig); // .setSymbolResolver(new JavaSymbolSolver(new ReflectionTypeSolver())));
                     CompilationUnit cu = StaticJavaParser.parse(Files.readString(path));
                     Files.writeString(path, cu.toString());
                 } catch (ParseProblemException e) {
