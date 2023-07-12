@@ -7,6 +7,7 @@ import com.github.javaparser.ast.CompilationUnit;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,7 +25,7 @@ public class Main {
                         .setAttributeComments(false).setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17);
                 try {
                     StaticJavaParser.setConfiguration(parserConfig); // .setSymbolResolver(new JavaSymbolSolver(new ReflectionTypeSolver())));
-                    CompilationUnit cu = StaticJavaParser.parse(Files.readString(path));
+                    CompilationUnit cu = StaticJavaParser.parse(Files.readString(path, StandardCharsets.ISO_8859_1));
                     Files.writeString(path, cu.toString());
                 } catch (ParseProblemException e) {
                     System.err.print(path + " -- ");
